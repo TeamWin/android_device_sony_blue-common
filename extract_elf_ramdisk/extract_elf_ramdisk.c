@@ -52,7 +52,7 @@
 
 char input_filename[PATH_MAX], output_filename[PATH_MAX], tmp_dir[PATH_MAX];
 int has_input = 0, has_output = 0, dont_unzip = 0, check_ramdisk = 0;
-int use_dump_image = 0, arg_error = 0;
+int use_dump_image = 0, arg_error = 0, ramdisk_loc = ELF_RAMDISK_LOCATION;
 
 int path_exists(char* path) {
 	// Check to see if the path exists
@@ -228,8 +228,8 @@ void extract_ramdisk() {
 		exit(-1);
 	}
 
-	if (gelf_getphdr(e, ELF_RAMDISK_LOCATION - 1, &phdr) != &phdr) {
-		printf("Failed to get header %i\n", ELF_RAMDISK_LOCATION - 1);
+	if (gelf_getphdr(e, ramdisk_loc - 1, &phdr) != &phdr) {
+		printf("Failed to get header %i\n", ramdisk_loc - 1);
 		elf_end(e);
 		close(elf_fd);
 		exit(-1);
@@ -309,6 +309,8 @@ void print_usage() {
 	printf(" -d                   Do not gunzip\n");
 	printf(" -c                   Check ramdisk for stock recovery (cannot\n");
 	printf("                      be used with -d)\n\n");
+	printf(" -0                   Extract kernel\n");
+	printf(" -2                   Extract rpm\n");
 	printf("If a stock recovery ramdisk is found, the ramdisk will not be\n");
 	printf("copied to the output filename.\n");
 }
@@ -386,6 +388,12 @@ int main(int argc, char** argv) {
 			check_ramdisk = 1;
 		} else if (strncmp(argv[index], "-u", 2) == 0) {
 			use_dump_image = 1;
+		} else if (strncmp(argv[index], "-0", 2) == 0) {
+			ramdisk_loc = 1;
+		} else if (strncmp(argv[index], "-2", 2) == 0) {
+			ramdisk_loc = 3;
+		} else if (strncmp(argv[index], "-3", 2) == 0) {
+			ramdisk_loc = 4;
 		} else {
 			arg_error = 3;
 			printf("Invalid argument '%s'.\n\n", argv[index]);
